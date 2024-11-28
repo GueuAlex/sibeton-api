@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       expiresIn: '1h',
     });
 
-    return successResponse(res, { token }, 'Authentication successful');
+    return successResponse(res, { token, user:{id: user.id, first_name: user.firstName, last_name: user.lastName, role: user.role, phone: user.phone} }, 'Authentication successful');
   } catch (error) {
     console.error('Authentication error:', error);
     return errorResponse(res, 'Internal server error');
