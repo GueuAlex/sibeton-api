@@ -1,10 +1,11 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '@/prisma/client';
-import bcrypt from 'bcrypt';
+import type { NextApiRequest, NextApiResponse } from "next";
+import prisma from "@/prisma/client";
+import bcrypt from "bcrypt";
+import corsHandler from "@/utils/cors";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Vérifier si la méthode de la requête est POST
-  if (req.method === 'POST') {
+  if (req.method === "POST") {
     const { email, password, role, phone, firstName, lastName } = req.body;
 
     console.log(req.body);
@@ -13,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!email || !password || !role) {
       return res.status(400).json({
         success: false,
-        message: 'Email, password, and role are required'
+        message: "Email, password, and role are required",
       });
     }
 
@@ -23,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (existingUser) {
         return res.status(409).json({
           success: false,
-          message: 'Email already in use'
+          message: "Email already in use",
         });
       }
 
@@ -46,28 +47,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!newUser) {
         return res.status(500).json({
           success: false,
-          message: 'Failed to create user'
+          message: "Failed to create user",
         });
       }
 
       // Répondre avec succès
       return res.status(201).json({
         success: true,
-        message: 'User registered successfully',
-        data: { userId: newUser.id }
+        message: "User registered successfully",
+        data: { userId: newUser.id },
       });
     } catch (error) {
-      console.error('Error registering user:', error);
+      console.error("Error registering user:", error);
       return res.status(500).json({
         success: false,
-        message: 'Internal server error',
-        error: error instanceof Error ? error.message : String(error)
+        message: "Internal server error",
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
 
   // Vérifier si la méthode de la requête est GET
-  if (req.method === 'GET') {
+  if (req.method === "GET") {
     try {
       // Récupérer la liste des utilisateurs
       const users = await prisma.iuser.findMany({
@@ -77,22 +78,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           firstName: true,
           lastName: true,
           phone: true,
-          role: true
-        }
+          role: true,
+        },
       });
 
       // Répondre avec la liste des utilisateurs
       return res.status(200).json({
         success: true,
-        message: 'Users retrieved successfully',
-        data: users
+        message: "Users retrieved successfully",
+        data: users,
       });
     } catch (error) {
-      console.error('Error retrieving users:', error);
+      console.error("Error retrieving users:", error);
       return res.status(500).json({
         success: false,
-        message: 'Internal server error',
-        error: error instanceof Error ? error.message : String(error)
+        message: "Internal server error",
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -100,6 +101,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Si la méthode n'est ni GET ni POST, retourner une erreur 405
   return res.status(405).json({
     success: false,
-    message: 'Method Not Allowed'
+    message: "Method Not Allowed",
   });
+}
+
+export default function (req: NextApiRequest, res: NextApiResponse) {
+  return corsHandler(req, res, handler);
 }
