@@ -13,10 +13,14 @@ const cors = Cors({
 function runMiddleware(
   req: NextApiRequest,
   res: NextApiResponse,
-  fn: Function
-) {
+  fn: (
+    req: NextApiRequest,
+    res: NextApiResponse,
+    cb: (result: unknown) => void
+  ) => void
+): Promise<unknown> {
   return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
+    fn(req, res, (result: unknown) => {
       if (result instanceof Error) {
         return reject(result);
       }
@@ -29,8 +33,8 @@ function runMiddleware(
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
-  apiHandler: Function
-) {
+  apiHandler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>
+): Promise<void> {
   // Run the middleware
   await runMiddleware(req, res, cors);
 
