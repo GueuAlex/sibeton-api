@@ -27,15 +27,17 @@ const parseForm = async (
 ): Promise<{ fields: formidable.Fields; files: formidable.Files }> => {
   return new Promise((resolve, reject) => {
     const form = formidable.default();
-    form.parse(req, (err: any, fields: any, files: any) => {
-      if (err) reject(err);
-      resolve({ fields, files });
-    });
+    form.parse(
+      req,
+      (err, fields: formidable.Fields, files: formidable.Files) => {
+        if (err) reject(err);
+        resolve({ fields, files });
+      }
+    );
   });
 };
 
 async function handlePost(req: NextApiRequest, res: NextApiResponse) {
-  console.log(req.body);
   try {
     const { fields, files } = await parseForm(req);
     const label = fields.label as unknown as string;
@@ -127,6 +129,7 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
+// Replace the anonymous default export with a named function
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     return corsHandler(req, res, () => handlePost(req, res));

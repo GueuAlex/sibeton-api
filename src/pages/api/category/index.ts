@@ -96,6 +96,6 @@ async function handleDelete(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-export default function (req: NextApiRequest, res: NextApiResponse) {
+export default function corshandler(req: NextApiRequest, res: NextApiResponse) {
   return corsHandler(req, res, handler);
 }
