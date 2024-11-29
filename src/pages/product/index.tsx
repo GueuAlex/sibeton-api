@@ -73,7 +73,14 @@ const CreateProductForm: React.FC = () => {
     formState.images.forEach((image) => {
       formData.append("images", image);
     });
-    console.log(formData);
+    /* console.log({
+      label: formState.label,
+      description: formState.description,
+      categoryId: formState.categoryId,
+      cover: formState.cover,
+      images: [...formState.images],
+    });
+    return; */
 
     try {
       const response = await fetch("/api/product", {

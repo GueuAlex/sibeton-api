@@ -2,11 +2,11 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient } from "@prisma/client";
 import { put } from "@vercel/blob";
 import { z } from "zod";
+import corsHandler from "@/utils/cors";
+import { successResponse, errorResponse } from "@/utils/apiResponse";
 import formidable from "formidable";
 import fs from "fs/promises";
 import path from "path";
-import corsHandler from "../../../utils/cors";
-import { successResponse, errorResponse } from "../../../utils/apiResponse";
 
 const prisma = new PrismaClient();
 
@@ -34,18 +34,41 @@ const parseForm = async (
   });
 };
 
-async function handlePost(req: NextApiRequest, res: NextApiResponse) {
+async function handleGet(req: NextApiRequest, res: NextApiResponse) {
+  const { id } = req.query;
+
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id: Number(id) },
+      include: {
+        images: true,
+        category: true,
+      },
+    });
+
+    if (!product) {
+      return errorResponse(res, "Produit non trouvé", 404);
+    }
+
+    return successResponse(res, product, "Produit récupéré avec succès");
+  } catch (error) {
+    console.error("Erreur lors de la récupération du produit:", error);
+    return errorResponse(res, "Erreur lors de la récupération du produit", 500);
+  }
+}
+
+async function handlePut(req: NextApiRequest, res: NextApiResponse) {
+  const { id } = req.query;
+
   try {
     const { fields, files } = await parseForm(req);
 
-    // Convert fields to the expected format, handling potential undefined values
     const formData = {
       label: fields.label?.[0] ?? "",
       description: fields.description?.[0] ?? "",
       categoryId: fields.categoryId?.[0] ?? "",
     };
 
-    // Validate the data
     const validatedData = productSchema.parse(formData);
 
     const cover = files.cover as
@@ -88,21 +111,28 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
         })
     );
 
-    const product = await prisma.product.create({
+    const updatedProduct = await prisma.product.update({
+      where: { id: Number(id) },
       data: {
         ...validatedData,
         categoryId: parseInt(validatedData.categoryId),
-        cover: coverUrl,
+        cover: coverUrl || undefined,
         images: {
+          deleteMany: {},
           create: imageUrls.map((url) => ({ url })),
         },
       },
       include: {
         images: true,
+        category: true,
       },
     });
 
-    return successResponse(res, product, "Produit créé avec succès", 201);
+    return successResponse(
+      res,
+      updatedProduct,
+      "Produit mis à jour avec succès"
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
       return errorResponse(
@@ -112,35 +142,16 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
         error.flatten().fieldErrors
       );
     }
-    console.error("Erreur lors de la création du produit:", error);
-    return errorResponse(res, "Erreur lors de la création du produit", 500);
-  }
-}
-
-async function handleGet(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    const products = await prisma.product.findMany({
-      include: {
-        images: true,
-        category: true,
-      },
-    });
-    return successResponse(res, products, "Produits récupérés avec succès");
-  } catch (error) {
-    console.error("Erreur lors de la récupération des produits:", error);
-    return errorResponse(
-      res,
-      "Erreur lors de la récupération des produits",
-      500
-    );
+    console.error("Erreur lors de la mise à jour du produit:", error);
+    return errorResponse(res, "Erreur lors de la mise à jour du produit", 500);
   }
 }
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === "POST") {
-    return corsHandler(req, res, () => handlePost(req, res));
-  } else if (req.method === "GET") {
+  if (req.method === "GET") {
     return corsHandler(req, res, () => handleGet(req, res));
+  } else if (req.method === "PUT") {
+    return corsHandler(req, res, () => handlePut(req, res));
   } else {
     return errorResponse(res, "Méthode non autorisée", 405);
   }
