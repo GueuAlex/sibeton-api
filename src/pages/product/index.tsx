@@ -1,4 +1,5 @@
-import React, { useState, ChangeEvent } from "react";
+import React, { useState, ChangeEvent, FormEvent } from "react";
+import { z } from "zod";
 
 interface ProductFormState {
   label: string;
@@ -8,6 +9,17 @@ interface ProductFormState {
   images: File[];
 }
 
+const productSchema = z.object({
+  label: z
+    .string()
+    .min(1, "Le nom du produit est requis")
+    .max(100, "Le nom du produit ne doit pas dépasser 100 caractères"),
+  description: z
+    .string()
+    .max(1000, "La description ne doit pas dépasser 1000 caractères"),
+  categoryId: z.string().min(1, "La catégorie est requise"),
+});
+
 const CreateProductForm: React.FC = () => {
   const [formState, setFormState] = useState<ProductFormState>({
     label: "",
@@ -16,6 +28,7 @@ const CreateProductForm: React.FC = () => {
     cover: null,
     images: [],
   });
+  const [errors, setErrors] = useState<Partial<ProductFormState>>({});
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -37,8 +50,53 @@ const CreateProductForm: React.FC = () => {
     }
   };
 
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setErrors({});
+
+    try {
+      productSchema.parse(formState);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setErrors(error.flatten().fieldErrors);
+        return;
+      }
+    }
+
+    const formData = new FormData();
+    formData.append("label", formState.label);
+    formData.append("description", formState.description);
+    formData.append("categoryId", formState.categoryId);
+    if (formState.cover) {
+      formData.append("cover", formState.cover);
+    }
+    formState.images.forEach((image) => {
+      formData.append("images", image);
+    });
+    console.log(formData);
+
+    try {
+      const response = await fetch("/api/product", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Produit créé avec succès:", data);
+        // Réinitialiser le formulaire ou rediriger l'utilisateur
+      } else {
+        const errorData = await response.json();
+        console.error("Erreur lors de la création du produit:", errorData);
+        setErrors(errorData.errors || {});
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'envoi du formulaire:", error);
+    }
+  };
+
   return (
-    <form className="product-form" style={styles.form}>
+    <form className="product-form" style={styles.form} onSubmit={handleSubmit}>
       <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
         Créer un Produit
       </h2>
@@ -53,6 +111,7 @@ const CreateProductForm: React.FC = () => {
           onChange={handleInputChange}
           style={styles.input}
         />
+        {errors.label && <p style={styles.error}>{errors.label}</p>}
       </div>
 
       <div style={styles.field}>
@@ -64,6 +123,7 @@ const CreateProductForm: React.FC = () => {
           onChange={handleInputChange}
           style={styles.textarea}
         />
+        {errors.description && <p style={styles.error}>{errors.description}</p>}
       </div>
 
       <div style={styles.field}>
@@ -78,10 +138,11 @@ const CreateProductForm: React.FC = () => {
           <option value="" disabled>
             Sélectionner une catégorie
           </option>
-          <option value="1">Catégorie 1</option>
-          <option value="2">Catégorie 2</option>
-          <option value="3">Catégorie 3</option>
+          <option value="1">Béton prêt à l'emploi</option>
+          <option value="2">Béton préfabriqué</option>
+          <option value="3">Béton précontraint</option>
         </select>
+        {errors.categoryId && <p style={styles.error}>{errors.categoryId}</p>}
       </div>
 
       <div style={styles.field}>
@@ -117,6 +178,11 @@ const CreateProductForm: React.FC = () => {
 };
 
 const styles = {
+  error: {
+    color: "red",
+    fontSize: "0.8em",
+    marginTop: "5px",
+  },
   form: {
     maxWidth: "600px",
     margin: "0 auto",

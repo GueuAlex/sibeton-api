@@ -15,7 +15,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 // Enum pour les rôles d'utilisateur
 enum Role {
   ADMIN
@@ -27,13 +26,13 @@ model Iuser {
   id        Int       @id @default(autoincrement())
   firstName String
   lastName  String
-  phone     String?   
+  phone     String?
   email     String    @unique
-  password  String   // Ajout du champ password
+  password  String // Ajout du champ password
   role      Role
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  orders    Order[]   // Relation avec les commandes de l'utilisateur
+  orders    Order[] // Relation avec les commandes de l'utilisateur
   invoices  Invoice[] // Relation avec les factures de l'utilisateur
 }
 
@@ -48,16 +47,17 @@ model Category {
 
 // Modèle Product
 model Product {
-  id          Int       @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   label       String
   description String?
   cover       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   categoryId  Int
-  category    Category @relation(fields: [categoryId], references: [id])
-  images      Image[]   // Relation avec les images
-  orders      Order[]   @relation("OrderProducts") // Relation avec les commandes
+  category    Category   @relation(fields: [categoryId], references: [id])
+  images      Image[] // Relation avec les images
+  orders      Order[]    @relation("OrderProducts") // Relation avec les commandes
+  variantes   Variante[] // Relation avec les variantes
 }
 
 // Modèle Image
@@ -67,34 +67,66 @@ model Image {
   url       String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
 }
 
 // Modèle Order
 model Order {
-  id          Int       @id @default(autoincrement())
-  status      String    // Par exemple "pending", "completed", "shipped", etc.
-  amount      Float
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  userId      Int
-  user        Iuser      @relation(fields: [userId], references: [id])
-  products    Product[] @relation("OrderProducts") // Liste des produits dans la commande
+  id        Int       @id @default(autoincrement())
+  status    String // Par exemple "pending", "completed", "shipped", etc.
+  amount    Float
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  userId    Int
+  user      Iuser     @relation(fields: [userId], references: [id])
+  products  Product[] @relation("OrderProducts") // Liste des produits dans la commande
 
   Invoice Invoice[]
 }
 
 // Modèle Invoice
 model Invoice {
-  id          Int       @id @default(autoincrement())
-  status      String    // "paid", "unpaid", "pending", etc.
-  amount      Float
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  userId      Int
-  user        Iuser      @relation(fields: [userId], references: [id])
-  orderId     Int
-  order       Order     @relation(fields: [orderId], references: [id])
+  id        Int      @id @default(autoincrement())
+  status    String // "paid", "unpaid", "pending", etc.
+  amount    Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    Int
+  user      Iuser    @relation(fields: [userId], references: [id])
+  orderId   Int
+  order     Order    @relation(fields: [orderId], references: [id])
 }
 
+// Modèle caracteristique
+model Variante {
+  id               Int     @id @default(autoincrement())
+  unit_price       String
+  label            String?
+  reference        String?
+  description      String?
+  q800             String?
+  q100             String?
+  diametreQa       String?
+  diametreQb       String?
+  qrReservation    String?
+  qc               String?
+  ht               String?
+  hu               String?
+  i                String?
+  E                String?
+  poids            String?
+  lXh              String? // Largeur x Hauteur
+  longueur         String?
+  a                String?
+  epaisseurE1      String?
+  epaisseurE2      String?
+  approxPoids      String?
+  designationAxBxC String?
+  b                String?
+  c                String?
+  e                String?
+  l                String?
 
+  productId Int
+  product   Product @relation(fields: [productId], references: [id]) // Relation avec le produit
+}

@@ -4,7 +4,11 @@ import { NextApiRequest, NextApiResponse } from "next";
 // Initializing the cors middleware
 const cors = Cors({
   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-  origin: ["http://localhost:3000", "https://sibeton-api.vercel.app"],
+  origin: [
+    "http://localhost:3000",
+    "https://sibeton-api.vercel.app",
+    "https://sib-topaz.vercel.app",
+  ],
   credentials: true,
 });
 
@@ -41,3 +45,72 @@ export default async function handler(
   // Rest of the API logic
   return apiHandler(req, res);
 }
+
+/* -- Create ProductCategory table
+CREATE TABLE product_categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create Product table
+CREATE TABLE products (
+    id SERIAL PRIMARY KEY,
+    category_id INTEGER REFERENCES product_categories(id),
+    reference VARCHAR(50) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    base_weight DECIMAL(10,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create ProductVariant table
+CREATE TABLE product_variants (
+    id SERIAL PRIMARY KEY,
+    product_id INTEGER REFERENCES products(id),
+    diameter INTEGER NOT NULL, -- 800 or 1000 in the examples
+    weight DECIMAL(10,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create MeasurementType table
+CREATE TABLE measurement_types (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(20) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    unit VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create ProductMeasurement table
+CREATE TABLE product_measurements (
+    id SERIAL PRIMARY KEY,
+    product_id INTEGER REFERENCES products(id),
+    measurement_type_id INTEGER REFERENCES measurement_types(id),
+    value DECIMAL(10,2) NOT NULL,
+    unit VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Add indexes for better query performance
+CREATE INDEX idx_products_category ON products(category_id);
+CREATE INDEX idx_product_variants_product ON product_variants(product_id);
+CREATE INDEX idx_product_measurements_product ON product_measurements(product_id);
+CREATE INDEX idx_product_measurements_type ON product_measurements(measurement_type_id);
+
+-- Add example measurement types
+INSERT INTO measurement_types (code, name, unit) VALUES
+('DI', 'Diamètre Interieur', 'mm'),
+('DE', 'Diamètre Exterieur', 'mm'),
+('HU', 'Hauteur', 'mm'),
+('EP', 'Epaisseur', 'mm'),
+('LG', 'Largeur', 'mm'),
+('LN', 'Longueur', 'mm'),
+('RS', 'Réservation', 'mm'); */
