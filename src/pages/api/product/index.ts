@@ -14,6 +14,7 @@ const productSchema = z.object({
   label: z.string().min(1).max(100),
   description: z.string().max(1000).optional(),
   categoryId: z.string().min(1),
+  unit_price: z.string().min(0),
 });
 
 export const config = {
@@ -43,6 +44,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
       label: fields.label?.[0] ?? "",
       description: fields.description?.[0] ?? "",
       categoryId: fields.categoryId?.[0] ?? "",
+      unit_price: fields.unit_price?.[0] ?? 0,
     };
 
     // Validate the data
@@ -91,6 +93,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     const product = await prisma.product.create({
       data: {
         ...validatedData,
+        unit_price: parseInt(validatedData.unit_price),
         categoryId: parseInt(validatedData.categoryId),
         //cover: coverUrl,
         images: {

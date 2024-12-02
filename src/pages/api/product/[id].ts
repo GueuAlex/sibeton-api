@@ -148,11 +148,59 @@ async function handlePut(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
+async function handleDelete(req: NextApiRequest, res: NextApiResponse) {
+  const { id } = req.query;
+
+  if (!id || Array.isArray(id)) {
+    return errorResponse(res, "ID de produit invalide", 400);
+  }
+
+  try {
+    // Vérifier si le produit existe
+    const product = await prisma.product.findUnique({
+      where: { id: Number(id) },
+      include: { images: true },
+    });
+
+    if (!product) {
+      return errorResponse(res, "Produit non trouvé", 404);
+    }
+
+    // Supprimer les images associées au produit
+    await Promise.all(
+      product.images.map(async (image) => {
+        // Ici, vous devriez implémenter la logique pour supprimer l'image du stockage Vercel Blob
+        // Comme l'API Vercel Blob n'a pas de méthode de suppression directe, vous devrez gérer cela différemment
+        // Par exemple, vous pourriez garder une liste des images non utilisées pour les nettoyer périodiquement
+        console.log(`Image à supprimer : ${image.url}`);
+      })
+    );
+
+    // Supprimer le produit et ses relations
+    await prisma.product.delete({
+      where: { id: Number(id) },
+    });
+
+    return successResponse(res, null, "Produit supprimé avec succès");
+  } catch (error) {
+    console.error("Erreur lors de la suppression du produit:", error);
+    return errorResponse(
+      res,
+      `Erreur lors de la suppression du produit: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      500
+    );
+  }
+}
+
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     return corsHandler(req, res, () => handleGet(req, res));
   } else if (req.method === "PUT") {
     return corsHandler(req, res, () => handlePut(req, res));
+  } else if (req.method === "DELETE") {
+    return corsHandler(req, res, () => handleDelete(req, res));
   } else {
     return errorResponse(res, "Méthode non autorisée", 405);
   }
