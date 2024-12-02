@@ -43,6 +43,7 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse) {
       include: {
         images: true,
         category: true,
+        variantes: true,
       },
     });
 
@@ -80,7 +81,7 @@ async function handlePut(req: NextApiRequest, res: NextApiResponse) {
       | formidable.File
       | undefined;
 
-    let coverUrl = null;
+    /*  let coverUrl = null;
     if (cover && !Array.isArray(cover) && cover.filepath) {
       const content = await fs.readFile(cover.filepath);
       const { url } = await put(
@@ -91,7 +92,7 @@ async function handlePut(req: NextApiRequest, res: NextApiResponse) {
         }
       );
       coverUrl = url;
-    }
+    } */
 
     const imageUrls = await Promise.all(
       (Array.isArray(images) ? images : images ? [images] : [])
@@ -116,7 +117,7 @@ async function handlePut(req: NextApiRequest, res: NextApiResponse) {
       data: {
         ...validatedData,
         categoryId: parseInt(validatedData.categoryId),
-        cover: coverUrl || undefined,
+        // cover: coverUrl || undefined,
         images: {
           deleteMany: {},
           create: imageUrls.map((url) => ({ url })),
