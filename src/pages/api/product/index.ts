@@ -48,10 +48,10 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     // Validate the data
     const validatedData = productSchema.parse(formData);
 
-    const cover = files.cover as
+    /*     const cover = files.cover as
       | formidable.File
       | formidable.File[]
-      | undefined;
+      | undefined; */
     const images = files.images as
       | formidable.File[]
       | formidable.File
