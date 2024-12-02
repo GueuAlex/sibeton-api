@@ -26,14 +26,9 @@ const parseForm = async (
   req: NextApiRequest
 ): Promise<{ fields: formidable.Fields; files: formidable.Files }> => {
   return new Promise((resolve, reject) => {
-    const form = new formidable.IncomingForm();
-    // form.keepExtensions = true;
-
+    const form = formidable();
     form.parse(req, (err, fields, files) => {
-      if (err) {
-        console.error("Form parsing error:", err);
-        reject(new Error(`Form parsing error: ${err.message}`));
-      }
+      if (err) reject(err);
       resolve({ fields, files });
     });
   });
@@ -41,29 +36,40 @@ const parseForm = async (
 
 async function handlePost(req: NextApiRequest, res: NextApiResponse) {
   try {
-    console.log("Parsing form data...");
     const { fields, files } = await parseForm(req);
-    console.log("Form data parsed successfully");
 
-    console.log("Fields received:", fields);
-    console.log("Files received:", files);
-
+    // Convert fields to the expected format, handling potential undefined values
     const formData = {
       label: fields.label?.[0] ?? "",
       description: fields.description?.[0] ?? "",
       categoryId: fields.categoryId?.[0] ?? "",
     };
 
-    console.log("Validating data...");
+    // Validate the data
     const validatedData = productSchema.parse(formData);
-    console.log("Data validated successfully");
 
+    /*     const cover = files.cover as
+      | formidable.File
+      | formidable.File[]
+      | undefined; */
     const images = files.images as
       | formidable.File[]
       | formidable.File
       | undefined;
 
-    console.log("Processing images...");
+    /*  let coverUrl = null;
+    if (cover && !Array.isArray(cover) && cover.filepath) {
+      const content = await fs.readFile(cover.filepath);
+      const { url } = await put(
+        path.basename(cover.originalFilename || "cover"),
+        content,
+        {
+          access: "public",
+        }
+      );
+      coverUrl = url;
+    } */
+
     const imageUrls = await Promise.all(
       (Array.isArray(images) ? images : images ? [images] : [])
         .filter(
@@ -81,13 +87,12 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
           return url;
         })
     );
-    console.log("Images processed successfully");
 
-    console.log("Creating product in database...");
     const product = await prisma.product.create({
       data: {
         ...validatedData,
         categoryId: parseInt(validatedData.categoryId),
+        //cover: coverUrl,
         images: {
           create: imageUrls.map((url) => ({ url })),
         },
@@ -96,11 +101,9 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
         images: true,
       },
     });
-    console.log("Product created successfully");
 
     return successResponse(res, product, "Produit créé avec succès", 201);
   } catch (error) {
-    console.error("Error in handlePost:", error);
     if (error instanceof z.ZodError) {
       return errorResponse(
         res,
@@ -109,13 +112,8 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
         error.flatten().fieldErrors
       );
     }
-    return errorResponse(
-      res,
-      `Erreur lors de la création du produit: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-      500
-    );
+    console.error("Erreur lors de la création du produit:", error);
+    return errorResponse(res, "Erreur lors de la création du produit", 500);
   }
 }
 
@@ -133,22 +131,18 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse) {
     console.error("Erreur lors de la récupération des produits:", error);
     return errorResponse(
       res,
-      `Erreur lors de la récupération des produits: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
+      "Erreur lors de la récupération des produits",
       500
     );
   }
 }
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  return corsHandler(req, res, async () => {
-    if (req.method === "POST") {
-      await handlePost(req, res);
-    } else if (req.method === "GET") {
-      await handleGet(req, res);
-    } else {
-      errorResponse(res, "Méthode non autorisée", 405);
-    }
-  });
+  if (req.method === "POST") {
+    return corsHandler(req, res, () => handlePost(req, res));
+  } else if (req.method === "GET") {
+    return corsHandler(req, res, () => handleGet(req, res));
+  } else {
+    return errorResponse(res, "Méthode non autorisée", 405);
+  }
 }
