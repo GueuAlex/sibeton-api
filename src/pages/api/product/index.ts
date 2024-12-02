@@ -113,7 +113,11 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
       );
     }
     console.error("Erreur lors de la création du produit:", error);
-    return errorResponse(res, "Erreur lors de la création du produit", 500);
+    return errorResponse(
+      res,
+      "Erreur lors de la création du produit" + error,
+      500
+    );
   }
 }
 

@@ -83,10 +83,13 @@ const CreateProductForm: React.FC = () => {
     return; */
 
     try {
-      const response = await fetch("/api/product", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "https://sibeton-api.vercel.app/api/product",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
