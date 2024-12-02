@@ -23,6 +23,13 @@ function runMiddleware(
     cb: (result: unknown) => void
   ) => void
 ): Promise<unknown> {
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
   return new Promise((resolve, reject) => {
     fn(req, res, (result: unknown) => {
       if (result instanceof Error) {
