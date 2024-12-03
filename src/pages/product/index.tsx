@@ -88,6 +88,11 @@ const CreateProductForm: React.FC = () => {
         {
           method: "PUT",
           body: formData,
+          headers: {
+            "Accept": "*/*",
+ "User-Agent": "Thunder Client (https://www.thunderclient.com)",
+ "Content-Type": "application/json"
+          },
           //credentials: 'include',
         }
         
