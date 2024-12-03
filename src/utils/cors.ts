@@ -41,17 +41,39 @@ function runMiddleware(
   });
 }
 
+// Unified API handler with CORS
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
   apiHandler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>
 ): Promise<void> {
-  // Run the middleware
-  await runMiddleware(req, res, cors);
+  try {
+    // Add custom CORS headers
+    res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With"
+    );
+    res.setHeader("Access-Control-Allow-Credentials", "true");
 
-  // Rest of the API logic
-  return apiHandler(req, res);
+    // Handle preflight requests (OPTIONS method)
+    if (req.method === "OPTIONS") {
+      res.status(200).end();
+      return;
+    }
+
+    // Execute the CORS middleware
+    await runMiddleware(req, res, cors);
+
+    // Proceed to the actual API logic
+    await apiHandler(req, res);
+  } catch (error) {
+    console.error("CORS Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 }
+
 
 /* -- Create ProductCategory table
 CREATE TABLE product_categories (
