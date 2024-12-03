@@ -1,35 +1,39 @@
 import Cors from "cors";
 import { NextApiRequest, NextApiResponse } from "next";
 
-// Initializing the CORS middleware
+// Allowed origins
+const allowedOrigins = [
+  "https://sibeton-api.vercel.app",
+  "https://sib-topaz.vercel.app",
+  "http://localhost:3000"
+];
+
+// Initialize CORS middleware
 const cors = Cors({
-  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
-  origin: [
-    "https://sibeton-api.vercel.app",
-    "https://sib-topaz.vercel.app",
-    "http://localhost:3000",
-  ],
-  credentials: true, // Allow credentials for cross-origin requests
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
 });
 
-// Helper method to wait for a middleware to execute before continuing
-// And to throw an error when an error happens in a middleware
-// Helper method to wait for middleware execution
+// Helper method to run middleware
 function runMiddleware(
   req: NextApiRequest,
   res: NextApiResponse,
-  fn: (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    callback: (result: unknown) => void
-  ) => void
+  fn: Function
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    fn(req, res, (result) => {
+    fn(req, res, (result: any) => {
       if (result instanceof Error) {
         return reject(result);
       }
-      return resolve();
+      return resolve(result);
     });
   });
 }
@@ -41,35 +45,22 @@ export default async function handler(
   apiHandler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>
 ): Promise<void> {
   try {
-    // Add custom CORS headers
-    res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, X-Requested-With"
-    );
-    res.setHeader("Access-Control-Allow-Credentials", "true");
+    // Run CORS middleware
+    await runMiddleware(req, res, cors);
 
-    // Handle preflight requests (OPTIONS method)
-    if (req.method === 'OPTIONS') {
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-      res.status(204).end(); // Pas de contenu
+    // Handle preflight requests
+    if (req.method === "OPTIONS") {
+      res.status(204).end();
       return;
     }
 
-    // Execute the CORS middleware
-    await runMiddleware(req, res, cors);
-
-    // Proceed to the actual API logic
+    // Proceed with API handler
     await apiHandler(req, res);
   } catch (error) {
-    console.error("CORS Error:", error);
+    console.error("API Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 }
-
 
 /* -- Create ProductCategory table
 CREATE TABLE product_categories (
