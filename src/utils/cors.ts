@@ -14,22 +14,22 @@ const cors = Cors({
 
 // Helper method to wait for a middleware to execute before continuing
 // And to throw an error when an error happens in a middleware
+// Helper method to wait for middleware execution
 function runMiddleware(
   req: NextApiRequest,
   res: NextApiResponse,
   fn: (
     req: NextApiRequest,
     res: NextApiResponse,
-    cb: (result: unknown) => void
+    callback: (result: unknown) => void
   ) => void
-): Promise<unknown> {
+): Promise<void> {
   return new Promise((resolve, reject) => {
-    fn(req, res, (result: unknown) => {
+    fn(req, res, (result) => {
       if (result instanceof Error) {
         return reject(result);
       }
-
-      return resolve(result);
+      return resolve();
     });
   });
 }
