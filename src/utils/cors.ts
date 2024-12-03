@@ -1,66 +1,51 @@
-import Cors from "cors";
-import { NextApiRequest, NextApiResponse } from "next";
+import Cors from 'cors';
+import { NextApiRequest, NextApiResponse } from 'next';
 
-// Allowed origins
-const allowedOrigins = [
-  "https://sibeton-api.vercel.app",
-  "https://sib-topaz.vercel.app",
-  "http://localhost:3000"
-];
-
-// Initialize CORS middleware
 const cors = Cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+  origin: ['https://sibeton-api.vercel.app', 'https://sib-topaz.vercel.app', 'http://localhost:3000'],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
 });
 
-// Helper method to run middleware
 function runMiddleware(
   req: NextApiRequest,
   res: NextApiResponse,
-  fn: Function
+  fn: (req: NextApiRequest, res: NextApiResponse, result: (result: unknown) => void) => void
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
+    fn(req, res, (result: unknown) => {
       if (result instanceof Error) {
         return reject(result);
       }
-      return resolve(result);
+      return resolve();
     });
   });
 }
 
-// Unified API handler with CORS
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
   apiHandler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>
 ): Promise<void> {
   try {
-    // Run CORS middleware
+    // Run the CORS middleware
     await runMiddleware(req, res, cors);
 
     // Handle preflight requests
-    if (req.method === "OPTIONS") {
-      res.status(204).end();
+    if (req.method === 'OPTIONS') {
+      res.status(200).end();
       return;
     }
 
-    // Proceed with API handler
+    // Proceed to the actual API logic
     await apiHandler(req, res);
   } catch (error) {
-    console.error("API Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error('CORS Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 }
+
+
 
 /* -- Create ProductCategory table
 CREATE TABLE product_categories (

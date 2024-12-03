@@ -1,7 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import { z } from "zod";
-import axios from "axios";
-
 
 interface ProductFormState {
   label: string;
@@ -85,17 +83,15 @@ const CreateProductForm: React.FC = () => {
     return; */
 
     try {
-       await axios.delete("https://sibeton-api.vercel.app/api/product/13", {
-        withCredentials: true,
-        data: {
-          id: 13,
-        }, // Si vous avez des données à envoyer dans la requête DELETE
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }); 
+      const response = await fetch(
+        "https://sibeton-api.vercel.app/api/product",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
-      /* if (response.ok) {
+      if (response.ok) {
         const data = await response.json();
         console.log("Produit créé avec succès:", data);
         // Réinitialiser le formulaire ou rediriger l'utilisateur
@@ -103,7 +99,7 @@ const CreateProductForm: React.FC = () => {
         const errorData = await response.json();
         console.error("Erreur lors de la création du produit:", errorData);
         setErrors(errorData.errors || {});
-      } */
+      }
     } catch (error) {
       console.error("Erreur lors de l'envoi du formulaire:", error);
     }
