@@ -85,7 +85,7 @@ const CreateProductForm: React.FC = () => {
     return; */
 
     try {
-      const response = await axios.delete("https://sibeton-api.vercel.app/api/product/13", {
+       await axios.delete("https://sibeton-api.vercel.app/api/product/13", {
         withCredentials: true,
         data: {
           id: 13,
@@ -93,7 +93,7 @@ const CreateProductForm: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
         },
-      });
+      }); 
 
       /* if (response.ok) {
         const data = await response.json();
