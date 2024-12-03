@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 
 const cors = Cors({
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-  origin: ['https://sibeton-api.vercel.app', 'https://sib-topaz.vercel.app', 'http://localhost:3000'],
+  origin: ['http://localhost:3000','https://sib-topaz.vercel.app','https://sibeton-api.vercel.app'],
 });
 
 function runMiddleware(

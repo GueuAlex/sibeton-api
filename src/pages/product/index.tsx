@@ -67,36 +67,27 @@ const CreateProductForm: React.FC = () => {
     formData.append("label", formState.label);
     formData.append("description", formState.description);
     formData.append("categoryId", formState.categoryId);
+    formData.append("unit_price", "2000");
     if (formState.cover) {
       formData.append("cover", formState.cover);
     }
     formState.images.forEach((image) => {
       formData.append("images", image);
     });
-    /* console.log({
+    console.log({
       label: formState.label,
       description: formState.description,
       categoryId: formState.categoryId,
       cover: formState.cover,
       images: [...formState.images],
     });
-    return; */
+    //return;
 
     try {
-      const response = await fetch(
-        "https://sibeton-api.vercel.app/api/product/1",
-        {
-          method: "PUT",
-          body: formData,
-          headers: {
-            "Accept": "*/*",
- "User-Agent": "Thunder Client (https://www.thunderclient.com)",
- "Content-Type": "application/json"
-          },
-          //credentials: 'include',
-        }
-        
-      );
+      const response = await fetch("/api/product", {
+        method: "POST",
+        body: formData,
+      });
 
       if (response.ok) {
         const data = await response.json();
