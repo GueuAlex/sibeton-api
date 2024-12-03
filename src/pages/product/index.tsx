@@ -84,11 +84,13 @@ const CreateProductForm: React.FC = () => {
 
     try {
       const response = await fetch(
-        "https://sibeton-api.vercel.app/api/product",
+        "https://sibeton-api.vercel.app/api/product/1",
         {
-          method: "POST",
+          method: "PUT",
           body: formData,
+          credentials: 'include',
         }
+        
       );
 
       if (response.ok) {
