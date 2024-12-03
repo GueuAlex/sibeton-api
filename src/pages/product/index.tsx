@@ -88,7 +88,7 @@ const CreateProductForm: React.FC = () => {
         {
           method: "PUT",
           body: formData,
-          credentials: 'include',
+          //credentials: 'include',
         }
         
       );

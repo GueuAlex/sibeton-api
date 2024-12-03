@@ -3,14 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   reactStrictMode: true,
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'https://sibeton-api.vercel.app/api/:path*',
-      },
-    ]
-  },
+
   async headers() {
     return [
         {
