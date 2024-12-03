@@ -1,15 +1,15 @@
 import Cors from "cors";
 import { NextApiRequest, NextApiResponse } from "next";
 
-// Initializing the cors middleware
+// Initializing the CORS middleware
 const cors = Cors({
-  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
   origin: [
     "https://sibeton-api.vercel.app",
     "https://sib-topaz.vercel.app",
     "http://localhost:3000",
   ],
-  credentials: true,
+  credentials: true, // Allow credentials for cross-origin requests
 });
 
 // Helper method to wait for a middleware to execute before continuing
@@ -23,13 +23,6 @@ function runMiddleware(
     cb: (result: unknown) => void
   ) => void
 ): Promise<unknown> {
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-  );
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
   return new Promise((resolve, reject) => {
     fn(req, res, (result: unknown) => {
       if (result instanceof Error) {
