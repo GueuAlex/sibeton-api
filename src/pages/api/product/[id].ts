@@ -194,14 +194,21 @@ async function handleDelete(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === "GET") {
-    return corsHandler(req, res, () => handleGet(req, res));
-  } else if (req.method === "PUT") {
-    return corsHandler(req, res, () => handlePut(req, res));
-  } else if (req.method === "DELETE") {
-    return corsHandler(req, res, () => handleDelete(req, res));
-  } else {
-    return errorResponse(res, "Méthode non autorisée", 405);
-  }
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  await corsHandler(req, res, async () => {
+    switch (req.method) {
+      case "GET":
+        await handleGet(req, res);
+        break;
+      case "PUT":
+        await handlePut(req, res);
+        break;
+      case "DELETE":
+        await handleDelete(req, res);
+        break;
+      default:
+        res.setHeader("Allow", ["GET", "PUT", "DELETE"]);
+        res.status(405).end(`Method ${req.method} Not Allowed`);
+    }
+  });
 }
