@@ -7,6 +7,21 @@ import { orderSchema } from "@/utils/validation";
 
 const prisma = new PrismaClient();
 
+async function handler(req: NextApiRequest, res: NextApiResponse) {
+    switch (req.method) {
+      case "GET":
+        return handleGet(req, res);
+      case "POST":
+        return handlePost(req, res);
+     /*  case "PUT":
+        return handlePut(req, res);
+      case "DELETE":
+        return handleDelete(req, res); */
+      default:
+        return errorResponse(res, "Method not allowed", 405);
+    }
+  }
+
 async function handleGet(req: NextApiRequest, res: NextApiResponse) {
   try {
     const orders = await prisma.order.findMany({
@@ -49,13 +64,6 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-
 export default function corshandler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === "GET") {
-        return handleGet(req, res);
-      } else if (req.method === "POST") {
-        return handlePost(req, res);
-      } else {
-        return errorResponse(res, "Method not allowed", 405);
-      }
+    return corsHandler(req, res, handler);
   }

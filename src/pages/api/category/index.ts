@@ -11,10 +11,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       return handleGet(req, res);
     case "POST":
       return handlePost(req, res);
-    case "PUT":
+   /*  case "PUT":
       return handlePut(req, res);
     case "DELETE":
-      return handleDelete(req, res);
+      return handleDelete(req, res); */
     default:
       return errorResponse(res, "Method not allowed", 405);
   }
@@ -55,7 +55,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-async function handlePut(req: NextApiRequest, res: NextApiResponse) {
+/* async function handlePut(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { id, ...updateData } = req.body;
     if (!id) {
@@ -78,9 +78,9 @@ async function handlePut(req: NextApiRequest, res: NextApiResponse) {
     console.error("Error updating category:", error);
     return errorResponse(res, "Error updating category");
   }
-}
+} */
 
-async function handleDelete(req: NextApiRequest, res: NextApiResponse) {
+/* async function handleDelete(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { id } = req.query;
     if (!id) {
@@ -94,7 +94,7 @@ async function handleDelete(req: NextApiRequest, res: NextApiResponse) {
     console.error("Error deleting category:", error);
     return errorResponse(res, "Error deleting category");
   }
-}
+} */
 
 export default function corshandler(req: NextApiRequest, res: NextApiResponse) {
   return corsHandler(req, res, handler);
