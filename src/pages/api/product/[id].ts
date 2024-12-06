@@ -10,11 +10,11 @@ import path from "path";
 
 const prisma = new PrismaClient();
 
-const productSchema = z.object({
+/* const productSchema = z.object({
   label: z.string().min(1).max(100),
   description: z.string().max(1000).optional(),
   categoryId: z.string().min(0),
-});
+}); */
 
 export const config = {
   api: {
@@ -70,7 +70,7 @@ async function handlePut(req: NextApiRequest, res: NextApiResponse) {
       categoryId: fields.categoryId?.[0] ?? "",
     };
 
-    const validatedData = productSchema.parse(formData);
+    const validatedData = {label : formData.label, description : formData.description, categoryId : formData.categoryId};
 
     /*  const cover = files.cover as
       | formidable.File
