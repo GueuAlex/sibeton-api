@@ -146,7 +146,7 @@ async function handlePut(req: NextApiRequest, res: NextApiResponse) {
       );
     }
     console.error("Erreur lors de la mise à jour du produit:", error);
-    return errorResponse(res, "Erreur lors de la mise à jour du produit", 500);
+    return errorResponse(res, "Erreur lors de la mise à jour du produit" + error, 500);
   }
 }
 
