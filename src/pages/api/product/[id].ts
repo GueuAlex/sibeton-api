@@ -68,9 +68,11 @@ async function handlePut(req: NextApiRequest, res: NextApiResponse) {
       label: fields.label?.[0] ?? "",
       description: fields.description?.[0] ?? "",
       categoryId: fields.categoryId?.[0] ?? "",
+      unit_price: +(fields.unit_price?.[0] ?? 0),
     };
+    ;
 
-    const validatedData = {label : formData.label, description : formData.description, categoryId : formData.categoryId};
+    //const validatedData = {label : formData.label, description : formData.description, categoryId : formData.categoryId};
 
     /*  const cover = files.cover as
       | formidable.File
@@ -115,8 +117,8 @@ async function handlePut(req: NextApiRequest, res: NextApiResponse) {
     const updatedProduct = await prisma.product.update({
       where: { id: Number(id) },
       data: {
-        ...validatedData,
-        categoryId: parseInt(validatedData.categoryId),
+        ...formData,
+        categoryId: parseInt(formData.categoryId),
         // cover: coverUrl || undefined,
         images: {
           deleteMany: {},
