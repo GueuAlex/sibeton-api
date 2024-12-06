@@ -22,47 +22,58 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }
   }
 
-async function handleGet(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    const orders = await prisma.order.findMany({
-      include: {
-        user: true,
-        products: true,
-      },
-    });
-    return successResponse(res, orders, "Orders retrieved successfully");
-  } catch (error) {
-    console.error("Error retrieving orders:", error);
-    return errorResponse(res, "Error retrieving orders", 500);
-  }
-}
-
-async function handlePost(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    const validatedData = orderSchema.parse(req.body);
-    const order = await prisma.order.create({
-      data: {
-        status: validatedData.status,
-        amount: validatedData.amount,
-        userId: validatedData.userId,
-        products: {
-          connect: validatedData.products.map(id => ({ id })),
+  async function handleGet(req: NextApiRequest, res: NextApiResponse) {
+    try {
+      const orders = await prisma.order.findMany({
+        include: {
+          user: true,
+          products: {
+            include: {
+              product: true,
+            },
+          },
         },
-      },
-      include: {
-        user: true,
-        products: true,
-      },
-    });
-    return successResponse(res, order, "Order created successfully", 201);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return errorResponse(res, "Invalid data", 400, error.flatten().fieldErrors);
+      });
+      return successResponse(res, orders, "Orders retrieved successfully");
+    } catch (error) {
+      console.error("Error retrieving orders:", error);
+      return errorResponse(res, "Error retrieving orders", 500);
     }
-    console.error("Error creating order:", error);
-    return errorResponse(res, "Error creating order", 500);
   }
-}
+  
+  async function handlePost(req: NextApiRequest, res: NextApiResponse) {
+    try {
+      const validatedData = orderSchema.parse(req.body);
+      const order = await prisma.order.create({
+        data: {
+          status: validatedData.status,
+          amount: validatedData.amount,
+          userId: validatedData.userId,
+          products: {
+            create: validatedData.products.map(product => ({
+              product: { connect: { id: product.productId } },
+              quantity: product.quantity,
+            })),
+          },
+        },
+        include: {
+          user: true,
+          products: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      });
+      return successResponse(res, order, "Order created successfully", 201);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return errorResponse(res, "Invalid data", 400, error.flatten().fieldErrors);
+      }
+      console.error("Error creating order:", error);
+      return errorResponse(res, "Error creating order", 500);
+    }
+  }
 
 export default function corshandler(req: NextApiRequest, res: NextApiResponse) {
     return corsHandler(req, res, handler);

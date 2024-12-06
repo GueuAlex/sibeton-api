@@ -14,7 +14,11 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse) {
       where: { id: Number(id) },
       include: {
         user: true,
-        products: true,
+        products: {
+          include: {
+            product: true,
+          },
+        },
       },
     });
     if (!order) {
@@ -34,14 +38,26 @@ async function handlePut(req: NextApiRequest, res: NextApiResponse) {
     const order = await prisma.order.update({
       where: { id: Number(id) },
       data: {
-        ...validatedData,
+        status: validatedData.status,
+        amount: validatedData.amount,
+        userId: validatedData.userId,
         products: validatedData.products
-          ? { set: validatedData.products.map(id => ({ id })) }
+          ? {
+              deleteMany: {},
+              create: validatedData.products.map(product => ({
+                product: { connect: { id: product.productId } },
+                quantity: product.quantity,
+              })),
+            }
           : undefined,
       },
       include: {
         user: true,
-        products: true,
+        products: {
+          include: {
+            product: true,
+          },
+        },
       },
     });
     return successResponse(res, order, "Order updated successfully");

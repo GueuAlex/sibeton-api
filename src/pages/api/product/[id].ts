@@ -13,7 +13,7 @@ const prisma = new PrismaClient();
 const productSchema = z.object({
   label: z.string().min(1).max(100),
   description: z.string().max(1000).optional(),
-  categoryId: z.string().min(1),
+  categoryId: z.string().min(0),
 });
 
 export const config = {
