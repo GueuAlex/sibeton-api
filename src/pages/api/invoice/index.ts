@@ -43,8 +43,16 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     const invoice = await prisma.invoice.create({
       data: validatedData,
       include: {
-        user: true,
-        order: true,
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+          },
+        },
+        order: {include: {products: true}},
       },
     });
     return successResponse(res, invoice, "Invoice created successfully", 201);

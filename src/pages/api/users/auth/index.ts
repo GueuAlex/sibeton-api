@@ -47,6 +47,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           last_name: user.lastName,
           role: user.role,
           phone: user.phone,
+          email: user.email,
         },
       },
       "Authentication successful"

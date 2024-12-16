@@ -26,12 +26,16 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
       const orders = await prisma.order.findMany({
         include: {
-          user: true,
-          products: {
-            include: {
-              product: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              phone: true,
             },
           },
+          products: true,
         },
       });
       return successResponse(res, orders, "Orders retrieved successfully");

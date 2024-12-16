@@ -13,8 +13,16 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse) {
     const invoice = await prisma.invoice.findUnique({
       where: { id: Number(id) },
       include: {
-        user: true,
-        order: true,
+        user: {
+          select : {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+          }
+        },
+        order: {include: {products: true}},
       },
     });
     if (!invoice) {

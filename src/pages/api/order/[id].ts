@@ -13,12 +13,16 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse) {
     const order = await prisma.order.findUnique({
       where: { id: Number(id) },
       include: {
-        user: true,
-        products: {
-          include: {
-            product: true,
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
           },
         },
+        products: true,
       },
     });
     if (!order) {
