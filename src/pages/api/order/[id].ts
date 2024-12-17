@@ -22,7 +22,7 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse) {
             phone: true,
           },
         },
-        products: true,
+        products: {include: {product: {include: {images: true}}}},
       },
     });
     if (!order) {
@@ -47,7 +47,7 @@ async function handlePut(req: NextApiRequest, res: NextApiResponse) {
         userId: validatedData.userId,
         products: validatedData.products
           ? {
-              deleteMany: {},
+              //deleteMany: {},
               create: validatedData.products.map(product => ({
                 product: { connect: { id: product.productId } },
                 quantity: product.quantity,

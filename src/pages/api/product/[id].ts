@@ -121,7 +121,7 @@ async function handlePut(req: NextApiRequest, res: NextApiResponse) {
         categoryId: parseInt(formData.categoryId),
         // cover: coverUrl || undefined,
         images: {
-          deleteMany: {},
+          //deleteMany: {},
           create: imageUrls.map((url) => ({ url })),
         },
       },
