@@ -35,7 +35,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
               phone: true,
             },
           },
-          products: {include: {product: true}},
+          products: {include: {product: {include: {images: true}}}},
         },
       });
       return successResponse(res, orders, "Orders retrieved successfully");
